@@ -1,27 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function TextInputArray() {
   const [inputText, setInputText] = useState('');
   const [textArray, setTextArray] = useState<string[]>([]);
-  const [isValid, setIsValid] = useState(true);
+  const [isValid, setIsValid] = useState<boolean | null>(null);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
-    setIsValid(true);
+    setIsValid(null);
   };
 
   const handleAddText = () => {
-    const regex = /^C[M-U]-(?!0000)\d{4}-[A-Z]$/;
-    if (regex.test(inputText.trim().toUpperCase())) {
-      setTextArray([...textArray, inputText.trim().toUpperCase()]);
-      setInputText('');
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-    }
+    const cleanedInput = inputText.trim().toUpperCase();
+    setTextArray([...textArray, cleanedInput]);
+    setInputText('');
+    setIsValid(isValidInput(cleanedInput));
   };
 
-  console.log(textArray);
+  const isValidInput = (input: string): boolean => {
+    const regex = /^C[M-U]-(?!0000)\d{4}-[A-Z]$/;
+    return regex.test(input);
+  };
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentText, setCurrentText] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentIndex < textArray.length) {
+      const textToDisplay = textArray[currentIndex];
+      let letterIndex = 0;
+
+      const interval = setInterval(() => {
+        if (letterIndex < textToDisplay.length) {
+          const currentLetter = textToDisplay[letterIndex];
+          setCurrentText(currentLetter); // Mostrar solo la letra actual
+          setIsValid(isValidInput(currentLetter)); // Validar la letra actual
+          letterIndex++;
+        } else {
+          clearInterval(interval);
+          setCurrentText(null); // Borrar la letra
+          setCurrentIndex((prevIndex) => prevIndex + 1);
+          setTimeout(() => {
+            setCurrentText(''); // Reiniciar la letra
+          }, 1000); // Esperar un segundo antes de pasar al siguiente elemento
+        }
+      }, 1000); // Mostrar las letras con un intervalo de 100 ms
+    }
+  }, [currentIndex, textArray]);
 
   return (
     <div>
@@ -32,15 +57,23 @@ function TextInputArray() {
         onChange={handleInputChange}
       />
       <button onClick={handleAddText}>Validar</button>
-      {!isValid && <p style={{ color: 'red' }}>Entrada no válida</p>}
-      {isValid && textArray.length > 0 && (
+      {isValid === false && (
+        <p style={{ color: 'red' }}>Entrada no válida</p>
+      )}
+      {isValid === true && textArray.length > 0 && (
         <p style={{ color: 'green' }}>Entrada válida</p>
       )}
-      <ul>
-        {textArray.map((text, index) => (
-          <li key={index}>{text}</li>
-        ))}
-      </ul>
+      <div>
+        {currentText && (
+          <p
+            style={{
+              color: isValidInput(currentText) ? 'green' : 'red',
+            }}
+          >
+            {currentText}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
