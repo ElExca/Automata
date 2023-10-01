@@ -5,6 +5,8 @@ function App() {
     const [cadena, setCadena] = useState('');
     const [mensaje, setMensaje] = useState([]);
 
+    const cadenaMinusculas = cadena.toLowerCase();
+
     const validarCadena = (cadena) => {
         const validaciones = [];
 
@@ -17,20 +19,20 @@ function App() {
         };
 
         // Convertir la cadena ingresada a minúsculas
-        const cadenaMinusculas = cadena.toLowerCase();
+        
 
-        // Verificar la longitud de la cadena
-        if (cadenaMinusculas.length !== 9) {
-            agregarValidacion(cadena[0], false);
+        if (cadenaMinusculas.length < 9) {
             return validaciones;
         }
+
+
 
         // Verificar el primer carácter
         if (cadenaMinusculas[0] !== 'c') {
             agregarValidacion(cadena[0], false);
             return validaciones;
         } else {
-            agregarValidacion(cadena[0], true);
+            agregarValidacion(cadena[0], true); 
         }
 
         // Verificar el segundo carácter
@@ -79,6 +81,18 @@ function App() {
         } else {
             agregarValidacion(cadena[8], true);
         }
+        if (cadenaMinusculas[3] >= '1' && cadenaMinusculas[3] <= '9') {
+            agregarValidacion(cadena[3], true);
+        } else {
+            agregarValidacion(cadena[3], false);
+        }
+ 
+
+
+        if (cadenaMinusculas === '0000') {
+            validaciones[7].valido = false// Marcar el último "0" como inválido
+            
+        }
 
         return validaciones;
     };
@@ -87,34 +101,78 @@ function App() {
         const inputCadena = event.target.value;
         setCadena(inputCadena);
     };
-
     const handleValidar = () => {
+        if (cadena.length < 9) {
+            setMensaje(['La cadena debe tener al menos 9 caracteres.']);
+            return;
+        }
+    
         const validaciones = validarCadena(cadena);
+    
+        const mensajesValidados = [];
+        let caracteresValidos = true;
+    
+        for (let i = 0; i < validaciones.length; i++) {
+            const caracter = cadena[i];
+            let mensaje = `Q${i + 1} - ${caracter} - ${validaciones[i].valido ? 'VÁLIDO' : 'INVÁLIDO'}`;
+    
+            if (i === 3 && cadenaMinusculas[3] === '0') {
+                if (cadenaMinusculas[7] >= '1' && cadenaMinusculas[7] <= '9') {
+                    mensaje = `Q7 - ${caracter} - VÁLIDO`;
+                }
+            }
 
-        // Convertir las validaciones a mayúsculas
-        const validacionesMayusculas = validaciones.map((validacion) => ({
-            caracter: validacion.caracter.toUpperCase(),
-            valido: validacion.valido,
-        }));
-
-        // Mostrar las validaciones en forma de lista
-        const listaValidaciones = validacionesMayusculas.map((validacion, index) => (
-            <div key={index}>
-                {index + 1}. "{validacion.caracter}" - {validacion.valido ? 'VÁLIDO' : 'INVÁLIDO'}
-            </div>
-        ));
-
-        setMensaje(listaValidaciones);
+    
+            if (i === 4 && cadenaMinusculas[0] >= '1' && cadenaMinusculas[0] <= '9' && cadenaMinusculas[4] === '0') {
+                mensaje = `Q10 - ${caracter} - VÁLIDO`;
+            }
+    
+            if (i === 3 && cadenaMinusculas[3] === '0' && cadenaMinusculas[4] >= '1' && cadenaMinusculas[4] <= '9') {
+                mensaje = `Q4 - ${caracter} - VÁLIDO`;
+            }
+    
+            if (i === 5 && cadenaMinusculas[3] === '0' && cadenaMinusculas[4] === '0' && cadenaMinusculas[5] >= '1' && cadenaMinusculas[5] <= '9') {
+                mensaje = `Q12 - ${caracter} - VÁLIDO`;
+            }
+    
+            mensajesValidados.push(mensaje);
+    
+            if (!validaciones[i].valido) {
+                caracteresValidos = false;
+                break;
+            }
+        }
+    
+        // Eliminar los mensajes no válidos si los caracteres no son válidos
+        if (!caracteresValidos) {
+            mensajesValidados.splice(validaciones.length);
+        }
+    
+        setMensaje(mensajesValidados);
     };
+    
+    
+    
+    
+    
+    
+    
 
     return (
         <div>
             <label>Ingresa la cadena:</label>
             <input type="text" value={cadena} onChange={handleChange} />
             <button onClick={handleValidar}>Validar</button>
-            {mensaje && <div>{mensaje}</div>}
+            {mensaje.map((mensaje, index) => (
+                <div key={index}>{mensaje}</div>
+            ))}
         </div>
     );
 }
 
 export default App;
+
+
+
+
+
