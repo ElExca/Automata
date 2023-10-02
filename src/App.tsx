@@ -1,162 +1,106 @@
-import './App.css';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
-function App() {
-    const [cadena, setCadena] = useState('');
-    const [mensaje, setMensaje] = useState([]);
-
-    const cadenaMinusculas = cadena.toLowerCase();
-
-    const validarCadena = (cadena) => {
-        const validaciones = [];
-
-        // Función para agregar un mensaje de validación
-        const agregarValidacion = (caracter, valido) => {
-            validaciones.push({
-                caracter,
-                valido,
-            });
-        };
-
-        // Convertir la cadena ingresada a minúsculas
-        
-
-        if (cadenaMinusculas.length < 9) {
-            return validaciones;
-        }
-
-
-
-        // Verificar el primer carácter
-        if (cadenaMinusculas[0] !== 'c') {
-            agregarValidacion(cadena[0], false);
-            return validaciones;
-        } else {
-            agregarValidacion(cadena[0], true); 
-        }
-
-        // Verificar el segundo carácter
-        if (cadenaMinusculas[1] < 'm' || cadenaMinusculas[1] > 'u') {
-            agregarValidacion(cadena[1], false);
-            return validaciones;
-        } else {
-            agregarValidacion(cadena[1], true);
-        }
-
-        // Verificar el tercer carácter
-        if (cadenaMinusculas[2] !== '-') {
-            agregarValidacion(cadena[2], false);
-            return validaciones;
-        } else {
-            agregarValidacion(cadena[2], true);
-        }
-
-        // Verificar los siguientes 4 caracteres
-        const numero = Number(cadenaMinusculas.substring(3, 7));
-        if (isNaN(numero) || numero < 1 || numero > 9999 || numero === 0) {
-            // Agregar cada uno de los caracteres como válidos
-            for (let i = 3; i < 7; i++) {
-                agregarValidacion(cadena[i], i === 6 ? false : true);
-            }
-            return validaciones;
-        } else {
-            // Agregar cada uno de los caracteres como válidos
-            for (let i = 3; i < 7; i++) {
-                agregarValidacion(cadena[i], true);
-            }
-        }
-
-        // Verificar el octavo carácter
-        if (cadenaMinusculas[7] !== '-') {
-            agregarValidacion(cadena[7], false);
-            return validaciones;
-        } else {
-            agregarValidacion(cadena[7], true);
-        }
-
-        // Verificar el noveno carácter
-        if (cadenaMinusculas[8] < 'a' || cadenaMinusculas[8] > 'z') {
-            agregarValidacion(cadena[8], false);
-            return validaciones;
-        } else {
-            agregarValidacion(cadena[8], true);
-        }
-        if (cadenaMinusculas[3] >= '1' && cadenaMinusculas[3] <= '9') {
-            agregarValidacion(cadena[3], true);
-        } else {
-            agregarValidacion(cadena[3], false);
-        }
- 
-
-
-        if (cadenaMinusculas === '0000') {
-            validaciones[7].valido = false// Marcar el último "0" como inválido
-            
-        }
-
-        return validaciones;
+// Define los tipos para las transiciones
+type Transiciones = {
+    [estado: string]: {
+        [caracter: string]: string | undefined;
     };
+};
 
-    const handleChange = (event) => {
+const transiciones: Transiciones = {
+    '0': { 'C': '1' },
+    '1': { 'M': '2', 'N': '2', 'O': '2', 'P': '2', 'Q': '2', 'R': '2', 'S': '2', 'T': '2',
+        'U': '2'},
+    '2': { '-': '3' },
+    '3': { '0': '4', "1": '10', "2": '10', "3": '10', "4": '10', "5": '10', "6": '10', "7": '10', "8": '10', "9": '10'
+},
+    '4': { '0': '5', "1": '11', "2": '11', "3": '11', "4": '11', "5": '11', "6": '11', "7": '11', "8": '11', "9": '11' },
+    '5': { '0': '6', "1": '12', "2": '12', "3": '12', "4": '12', "5": '12', "6": '12', "7": '12', "8": '12', "9": '12' },
+    '6': { "1": '7', "2": '7', "3": '7', "4": '7', "5": '7', "6": '7', "7": '7', "8": '7', "9": '7' },
+    '10': { '0': '11', "1": '11', "2": '11', "3": '11', "4": '11', "5": '11', "6": '11', "7": '11', "8": '11', "9": '11' },
+    '11': { '0': '12', "1": '12', "2": '12', "3": '12', "4": '12', "5": '12', "6": '12', "7": '12', "8": '12', "9": '12' },
+    '12': { '0': '7', "1": '7', "2": '7', "3": '7', "4": '7', "5": '7', "6": '7', "7": '7', "8": '7', "9": '7' },
+    '7': { '-': '8' },
+    '8': { 'A': '9', 'B': '9', 'C': '9', 'D': '9', 'E': '9', 'F': '9', 'G': '9', 'H': '9', 'I': '9', 'J': '9',
+      'K': '9', 'L': '9', 'M': '9', 'N': '9', 'O': '9', 'P': '9', 'Q': '9', 'R': '9', 'S': '9', 'T': '9',
+      'U': '9', 'V': '9', 'W': '9', 'X': '9', 'Y': '9', 'Z': '9'
+ },
+    '9': {},
+};
+
+// Define los caracteres válidos
+const caracteresValidos = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-';
+
+const validarCadena = (cadena: string): boolean => {
+    let estadoActual = '0';
+
+    for (const caracter of cadena) {
+        if (!caracteresValidos.includes(caracter)) {
+            return false;
+        }
+
+        const transicion = transiciones[estadoActual][caracter];
+
+        if (transicion !== undefined) {
+            estadoActual = transicion;
+        } else {
+            return false;
+        }
+    }
+
+    return estadoActual === '9';
+};
+
+const App: React.FC = () => {
+    const [cadena, setCadena] = useState<string>('');
+    const [mensaje, setMensaje] = useState<string[]>([]);
+    const [transicionesMensaje, setTransicionesMensaje] = useState<string>('');
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const inputCadena = event.target.value;
         setCadena(inputCadena);
     };
+
     const handleValidar = () => {
         if (cadena.length < 9) {
             setMensaje(['La cadena debe tener al menos 9 caracteres.']);
+            setTransicionesMensaje('');
             return;
         }
-    
-        const validaciones = validarCadena(cadena);
-    
-        const mensajesValidados = [];
-        let caracteresValidos = true;
-    
-        for (let i = 0; i < validaciones.length; i++) {
-            const caracter = cadena[i];
-            let mensaje = `Q${i + 1} - ${caracter} - ${validaciones[i].valido ? 'VÁLIDO' : 'INVÁLIDO'}`;
-    
-            if (i === 3 && cadenaMinusculas[3] === '0') {
-                if (cadenaMinusculas[7] >= '1' && cadenaMinusculas[7] <= '9') {
-                    mensaje = `Q7 - ${caracter} - VÁLIDO`;
-                }
-            }
 
-    
-            if (i === 4 && cadenaMinusculas[0] >= '1' && cadenaMinusculas[0] <= '9' && cadenaMinusculas[4] === '0') {
-                mensaje = `Q10 - ${caracter} - VÁLIDO`;
-            }
-    
-            if (i === 3 && cadenaMinusculas[3] === '0' && cadenaMinusculas[4] >= '1' && cadenaMinusculas[4] <= '9') {
-                mensaje = `Q4 - ${caracter} - VÁLIDO`;
-            }
-    
-            if (i === 5 && cadenaMinusculas[3] === '0' && cadenaMinusculas[4] === '0' && cadenaMinusculas[5] >= '1' && cadenaMinusculas[5] <= '9') {
-                mensaje = `Q12 - ${caracter} - VÁLIDO`;
-            }
-    
-            mensajesValidados.push(mensaje);
-    
-            if (!validaciones[i].valido) {
-                caracteresValidos = false;
+        const esValida = validarCadena(cadena);
+
+        if (esValida) {
+            setMensaje(['¡La entrada es válida!']);
+        } else {
+            setMensaje(['La entrada no es válida.']);
+        }
+
+        setTransicionesMensaje(generarTransiciones(cadena));
+    };
+
+    const generarTransiciones = (cadena: string): string => {
+        let estadoActual = '0';
+        let transicionesMensaje = '';
+
+        for (const caracter of cadena) {
+            if (transiciones[estadoActual]) {
+                const transicion = transiciones[estadoActual][caracter];
+                if (transicion !== undefined) {
+                    transicionesMensaje += `Estado ${estadoActual} -> Estado ${transicion}: '${caracter}'\n`;
+                    estadoActual = transicion;
+                } else {
+                    transicionesMensaje += `Estado ${estadoActual} -> Error: '${caracter}'\n`;
+                    break;
+                }
+            } else {
+                transicionesMensaje += `Error: Estado ${estadoActual} no existe.\n`;
                 break;
             }
         }
-    
-        // Eliminar los mensajes no válidos si los caracteres no son válidos
-        if (!caracteresValidos) {
-            mensajesValidados.splice(validaciones.length);
-        }
-    
-        setMensaje(mensajesValidados);
+
+        return transicionesMensaje;
     };
-    
-    
-    
-    
-    
-    
-    
 
     return (
         <div>
@@ -166,13 +110,14 @@ function App() {
             {mensaje.map((mensaje, index) => (
                 <div key={index}>{mensaje}</div>
             ))}
+            {transicionesMensaje && (
+                <div>
+                    <h3>Transiciones:</h3>
+                    <pre>{transicionesMensaje}</pre>
+                </div>
+            )}
         </div>
     );
-}
+};
 
 export default App;
-
-
-
-
-
