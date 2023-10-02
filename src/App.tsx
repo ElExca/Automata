@@ -103,17 +103,27 @@ const App: React.FC = () => {
     };
 
     return (
-        <div>
-            <label>Ingresa la cadena:</label>
-            <input type="text" value={cadena} onChange={handleChange} />
-            <button onClick={handleValidar}>Validar</button>
+        <div className="bg-blue-200 p-4">
+            <label className="block">Ingresa la cadena:</label>
+            <input
+                type="text"
+                value={cadena}
+                onChange={handleChange}
+                className="border rounded-md p-2 mb-2"
+            />
+            <button
+                onClick={handleValidar}
+                className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+            >
+                Validar
+            </button>
             {mensaje.map((mensaje, index) => (
-                <div key={index}>{mensaje}</div>
+                <div key={index} className="mt-2">{mensaje}</div>
             ))}
             {transicionesMensaje && (
-                <div>
+                <div className="mt-4">
                     <h3>Transiciones:</h3>
-                    <pre>{transicionesMensaje}</pre>
+                    <pre className="border p-2 rounded-md">{transicionesMensaje}</pre>
                 </div>
             )}
         </div>
